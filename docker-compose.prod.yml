@@ -1,0 +1,29 @@
+# Fenfa production compose — one-click deploy
+# Usage:
+#   1. cp .env.example .env   # edit tokens / domain
+#   2. docker compose -f docker-compose.prod.yml up -d
+#
+# Image: ghcr.io/<your-github-user>/fenfa:latest
+# Trigger: push a tag v* → GitHub Actions builds multi-arch & pushes to GHCR.
+
+services:
+  fenfa:
+    image: ghcr.io/${GITHUB_REPOSITORY:-setsuodu/fenfa}:latest
+    container_name: fenfa
+    restart: unless-stopped
+    ports:
+      - "${FENFA_HOST_PORT:-8000}:8000"
+    environment:
+      FENFA_PORT: "8000"
+      FENFA_DATA_DIR: /data
+      FENFA_PRIMARY_DOMAIN: ${FENFA_PRIMARY_DOMAIN:-http://localhost:8000}
+      FENFA_ADMIN_TOKEN: ${FENFA_ADMIN_TOKEN:-change-me-admin}
+      FENFA_UPLOAD_TOKEN: ${FENFA_UPLOAD_TOKEN:-change-me-upload}
+    volumes:
+      - fenfa-data:/data
+      - fenfa-uploads:/app/uploads
+    # Alpine minimal image has no curl/wget; skip healthcheck or add later
+
+volumes:
+  fenfa-data:
+  fenfa-uploads:
